@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>TP-Volet 1 - Carl-David Hyppolite</title>
+    <link rel="icon" type="image/png" href="img/MKT_Icon_Mario.png" />
+
+    <style type="text/css">
+        canvas {
+            background: linear-gradient(135deg, #e71f25, #164dd6);
+            /*background: "img/fond.jpg";*/
+            border: 1px solid black;
+            cursor: pointer;
+        }
+
+        body {
+            /*width: 175%;*/
+            text-align: center;
+            overflow-x: hidden;
+            overflow-y: hidden;
+        }
+
+    </style>
+</head>
+
+<body>
+    <!-- Créer la balise canvas et définir ses dimensions -->
+    <canvas width="534" height="300"></canvas>
+    <script>
+        let leCanvas = document.querySelector("canvas");
+        let ctx = leCanvas.getContext("2d");
+        //
+        let perso = { //Caractéristique du personnage            
+            img: new Image(), //Image
+            posX: 0, //Position X
+            posY: 0, //Position Y
+            largeur: 38,
+            hauteur: 50,
+            vitesse: 4,
+            indexVignette: 0,
+            nbVignette: 48, //nb d'image sur le sprite
+            sourceX: 0,
+            estEnSaut: false,
+            vitesseY: 0,
+            gravite: 1
+        }
+
+        let background = { //Image d'arrière-plan
+            img: new Image(),
+            largeur: 534,
+            hauteur: 300,
+        }
+
+        let vie = {
+            img: new Image,
+            posX: 0,
+            posY: 0,
+            largeur: 30,
+            hauteur: 30,
+            nbVies: 3, //Variable qui mémorise le nombre de vie
+        }
+
+        //Source du l'image du personnage et de l'arrière plan
+        perso.img.src = "img/MarioNormalD.png";
+        background.img.src = "img/background.png"
+        vie.img.src = "img/MKT_Icon_Mario.png"
+
+        //Position initaile du personnage
+        perso.posX = (leCanvas.width - perso.largeur) / 2;
+        perso.posY = leCanvas.height - perso.hauteur;
+
+        //Flèches directionelles
+        let flecheDroite = false;
+        let flecheGauche = false;
+        let flecheHaut = false;
+        let flecheBas = false;
+
+        //Variables liés au jeu
+        let intervalIDgererJeu
+        let intervalIDAnimerPerso;
+        let gameStart = false;
+
+
+        document.addEventListener("keydown", presserTouche);
+        document.addEventListener("keyup", relacherTouche);
+        leCanvas.addEventListener("click", demarrerJeu);
+        background.img.addEventListener("load", afficherConsigneIntro);
+
+
+        afficherConsigneIntro()
+
+        function jeu() {
+
+            ctx.clearRect(0, 0, leCanvas.width, leCanvas.height); //Effacer le contenu du cavana
+            ctx.drawImage(background.img, 0, 0, background.largeur, background.hauteur); //Afficher l'image de fond.
+            deplacerPerso();
+            afficherNombreVie();
+        }
+
+        function afficherNombreVie() {
+            for (let compteurVie = 0; compteurVie < vie.nbVies; compteurVie++) {
+
+                //Afficher les coeurs
+                ctx.drawImage(vie.img, (compteurVie * 5) + compteurVie * vie.largeur, vie.posY, vie.largeur, vie.hauteur);
+                //Effacer l'image
+                //ctx.clearRect(0, 0, leCanvas.width, leCanvas.height);
+                //console.log(compteurVie)
+            }
+
+        }
+
+        function animerPerso() {
+            //Le coin gauche de la vignette: sourceX
+            perso.sourceX = perso.indexVignette * perso.largeur;
+
+            //Incrémenter et gérer l'index de la future vignette à afficher
+            perso.indexVignette += 1;
+
+            //Rénitialiser l'image du sprite
+            if (perso.indexVignette == perso.nbVignette) {
+                perso.indexVignette = 0;
+            }
+        }
+
+        function deplacerPerso() {
+
+            //Calculer les futures positions du perso et ses images
+            if (flecheDroite == true) {
+                perso.posX += perso.vitesse;
+
+                cour();
+                perso.img.src = "img/MarioRunD.png"; //modifier la source de l'image pour la course vers la droite
+
+            }
+            if (flecheGauche) {
+                perso.posX -= perso.vitesse;
+                cour();
+                perso.img.src = "img/MarioRunG.png"; //modifier l'image pour la course vers la gauche
+            }
+
+
+            //Empêcher le perso de quitter les limites de la scène
+            //----- Axe horizontal
+            //Limite gauche
+            if (perso.posX < 0) {
+                perso.posX = 0
+            }
+            //Limite droite
+            let posXmax = leCanvas.width - perso.largeur;
+            if (perso.posX > posXmax) {
+                perso.posX = posXmax;
+            }
+
+            //----- Axe vertical
+            //Limite haut
+            if (perso.posY < 0) {
+                perso.posY = 0
+            }
+            //Limite bas
+            let posYmax = leCanvas.height - perso.hauteur;
+            if (perso.posY > posYmax) {
+                perso.posY = posYmax;
+            }
+            //Faire sauter le personnage
+            if (perso.estEnSaut == true) {
+                perso.posY += perso.vitesseY;
+                perso.vitesseY += perso.gravite;
+
+                //Si le personnage est retombé, terminer le saut
+                if (perso.posY >= leCanvas.height - perso.img.height) {
+                    perso.estEnSaut = false;
+                }
+            }
+
+            //Dessiner le personnage avec le drawImage pour l'animation du personnage
+            ctx.drawImage(perso.img, perso.sourceX, 0, perso.largeur, perso.hauteur, perso.posX, perso.posY, perso.largeur, perso.hauteur);
+        }
+
+        function presserTouche(event) {
+            console.log("presserTouche", event.keyCode); //Enregistrer si une touche gauche/droite est pressée
+
+            if ((event.keyCode == 39) || (event.keyCode == 68)) { //flèche de droite ou touche D
+                flecheDroite = true;
+                flecheGauche = false;
+            }
+            if ((event.keyCode == 37) || (event.keyCode == 65)) { //flèche de gauche ou touche A
+                flecheGauche = true;
+                flecheDroite = false;
+            }
+            if ((event.keyCode == 38) || (event.keyCode == 87)) { //flèche du haut ou touche W
+                flecheHaut = true;
+                flecheBas = false;
+            }
+            if ((event.keyCode == 40) || (event.keyCode == 83)) { //flèche du bas ou touche S
+                flecheBas = true;
+                flecheHaut = false;
+            }
+
+        }
+
+        function relacherTouche(event) {
+            console.log("relacherTouche", event.keyCode); //Enregistrer si une touche gauche/droite est relâchée
+
+            if ((event.keyCode == 39) || (event.keyCode == 68)) { //flèche droite ou touche D
+                flecheDroite = false;
+
+                //Appeler la fonction pour rendre mario immobile et changer l'image source du personnage.
+                immobile();
+                perso.img.src = "img/MarioNormalD.png"
+            }
+
+            if ((event.keyCode == 37) || (event.keyCode == 65)) { //flèche gauche ou touche A
+                flecheGauche = false;
+
+                //Appeler la fonction pour rendre mario immobile et changer l'image source du personnage.
+                immobile();
+                perso.img.src = "img/MarioNormalG.png"
+            }
+
+            if ((event.keyCode == 32) || (event.keyCode == 38) || (event.keyCode == 87)) { //flèche du haut, touche W ou touche SPACE
+                if (perso.estEnSaut == false) {
+                    perso.estEnSaut = true;
+                    perso.vitesseY = -15;
+                }
+
+            }
+
+            //Commencer la partie avec la touche ENTER
+            if ((event.keyCode == 13) && (gameStart == false)) {
+                gameStart = true;
+                intervalIDgererJeu = setInterval(jeu, 1000 / 60);
+                intervalIDAnimerPerso = setInterval(animerPerso, 1000 / 15);
+                background.img.src = "img/fond.jpg"
+            }
+            /*if ((event.keyCode == 38) || (event.keyCode == 87) || (event.keyCode == 40) || (event.keyCode == 83)) {
+                //perso.img.src = "img/MarioNormal.png";
+            }*/
+
+        }
+        //Commencé la partie avec un click de souris sur le cavana
+        function demarrerJeu() {
+            if (gameStart == false) {
+                gameStart = true;
+                intervalIDgererJeu = setInterval(jeu, 1000 / 60);
+                intervalIDAnimerPerso = setInterval(animerPerso, 1000 / 15);
+                background.img.src = "img/fond.jpg"
+            }
+        }
+
+        //Change le nombre de vignette ainsi que la taille de l'image lors le personnage est immobile
+        function immobile() {
+            perso.largeur = 38;
+            perso.hauteur = 50;
+            perso.nbVignette = 48;
+            perso.indexVignette = 0;
+        }
+
+        //Change le nombre de vignette ainsi que la taille de l'image lors le personnage cour
+        function cour() {
+            perso.largeur = 39;
+            perso.hauteur = 49;
+            perso.nbVignette = 12;
+
+            //Empêche de dépasser les 12 images lorsque l'on commence à courir
+            if (perso.indexVignette > 12) {
+                perso.indexVignette = 0;
+            }
+        }
+
+        function afficherConsigneIntro() {
+            //Styles du texte
+            ctx.drawImage(background.img, 0, 0);
+            ctx.font = "bold italic 32px Calibri";
+            ctx.textBaseline = "top";
+            ctx.textAlign = "center";
+            ctx.fillStyle = "#000";
+            ctx.textAlign = "center";
+            ctx.fillText("Appuyer sur Enter pour débuter le jeu", leCanvas.width / 2, 10);
+            ctx.fillText("ou clicker sur l'écran.", leCanvas.width / 2, 35);
+        }
+
+    </script>
+
+</body>
+
+</html>
