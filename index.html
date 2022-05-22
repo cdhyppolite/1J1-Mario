@@ -25,7 +25,7 @@
 <body>
     <!-- Créer la balise canvas et définir ses dimensions -->
     <h1>Carl-David Hyppolite TP1</h1>
-    <h1>Remise 20 décembre 2020</h1>
+    <h1>Mise à jour le 22 mai 2022</h1>
     <canvas width="534" height="300"></canvas>
     <p>Objectif:</p>
     <p>Récupérer 10 vies et toucher l'étoile.</p>
@@ -34,7 +34,6 @@
     <p>En ramassant 100 pièces, vous gagner une vie.</p>
     <p>Déplacez-vous avec les flèches directionel et SPACE pour sauter.</p>
     <p>La touche "M" permet d'activer la musique.</p>
-    <p>R pour recommencer lorsque la partie est terminée</p>
     <script>
         let leCanvas = document.querySelector("canvas");
         let ctx = leCanvas.getContext("2d");
@@ -52,9 +51,9 @@
             estEnSaut: false,
             vitesseY: 0,
             gravite: 1,
-            regardDroite: true, //Vérifie de quel coté regard le personnage
+            regardDroite: true,
 
-            //Effects sonore
+            //Son(s)
             sonSaut: new Audio("sons/jump1.wav"),
             sonDegat: new Audio("sons/sm64_mario_hurt.wav"),
             // https://themushroomkingdom.net/media/sm64/wav
@@ -71,7 +70,7 @@
             sourceX: 0,
             estApparut: false, //Permet de ne pas effectuer une condition if plusieurs fois.
 
-            //Effect(s) sonore
+            //Son(s)
             apparait: new Audio("sons/sm64_star_appears.wav"),
             toucher: new Audio("sons/sm64_here_we_go.wav"),
             // https://themushroomkingdom.net/media/sm64/wav
@@ -89,7 +88,7 @@
             sourceX: 0,
             changerVitesse: false, //Permet de ne pas effectuer une condition if plusieurs fois.
 
-            //Effect(s) sonore
+            //Son(s)
             gameOver: new Audio("sons/gameover.mp3"),
         }
 
@@ -112,12 +111,12 @@
             minY: 0,
             maxY: 0,
 
-            //Effet(s) sonore
+            //Son(s)
             toucher: new Audio("sons/sm64_coin.wav"), //Lorsqu'on collect une piece.
             rouge: new Audio("sons/sm64_red_coin_1.wav"),
         }
 
-        let background = { //Variables de l'arrière plan
+        let background = { //Vraibles de l'arrière plan
             img: new Image(),
             largeur: 534,
             hauteur: 300,
@@ -136,7 +135,7 @@
             nbVies: 3, //Variable qui mémorise le nombre de vie
             objectif: 10, //Nombre de vie à obtenir pour faire appaître l'étoile
 
-            //Effect(s) sonore
+            //Son(s)
             son: new Audio("sons/sm64_1-up.wav"),
         }
 
@@ -207,13 +206,6 @@
                 perso.sonSaut.pause();
                 etoile.toucher.play();
 
-                /* //effacer l'étoile 
-                etoile.img.src = "";
-                etoile.posX = 1000;
-                etoile.posY = 1000;
-                //---------------
-                clearInterval(intervalIDAimerEtoile);*/
-
                 //Arrêter le jeu
                 clearInterval(intervalIDgererJeu);
                 //arrêter l'animation du perso pour change le nb d'images par secondes
@@ -255,7 +247,7 @@
                 perso.sonDegat.currentTime = 0;
                 perso.sonDegat.play();
 
-                //Vérifie si le nombre de vie est écouler et active la fin du jeu lorsque c'est le cas
+                //Vérifie si le nombre de vie est écouler et activer la fin du jeu lorsque c'est le cas
                 let gameOver = (vie.nbVies <= 0);
                 if (gameOver == true) {
                     finJeu = true;
@@ -294,15 +286,14 @@
                     vie.son.currentTime = 0;
                     vie.son.play();
                     vie.nbVies += 1;
-                    piece.score = 0;
+                    piece.score -= 100; //Baisser le compteur de 100 au lieu de le mettre à zéro
                 }
 
                 //Lorsque le nombre de vie atteint 5 , la vitesse de la bombe augmente pour le reste de la partie
-                //let changerVitesse = false;
                 if ((vie.nbVies >= 5) && (bombe.changerVitesse == false)) {
                     bombe.changerVitesse = true;
                     clearInterval(intervalIDAnimerBombe);
-                    setInterval("animer(bombe)", 1000 / 45); //Augmente la vitesse de l'animation
+                    setInterval("animer(bombe)", 1000 / 45);
 
                     if (bombe.vitesse < 0) {
                         bombe.vitesse = -5;
@@ -316,7 +307,7 @@
                     intervalIDAimerEtoile = setInterval("animer(etoile)", 1000 / 25);
                     etoile.apparait.play();
                     etoile.estApparut = true;
-                    background.musique.pause(); //la musique s'arrête
+                    background.musique.pause();
                 }
 
                 //Faire desendre l'étoile lentement après son animation
@@ -426,7 +417,7 @@
         }
 
         function presserTouche(event) {
-            //console.log("presserTouche", event.keyCode); //Enregistrer si une touche gauche/droite est pressée
+            //Enregistrer si une touche gauche/droite est pressée
 
             if ((event.keyCode == 39) || (event.keyCode == 68)) { //flèche de droite ou touche D
                 flecheDroite = true;
@@ -450,7 +441,7 @@
         }
 
         function relacherTouche(event) {
-            //console.log("relacherTouche", event.keyCode); //Enregistrer si une touche gauche/droite est relâchée
+            Enregistrer si une touche gauche/droite est relâchée
 
             if ((event.keyCode == 39) || (event.keyCode == 68)) { //flèche droite ou touche D
                 flecheDroite = false;
@@ -701,7 +692,7 @@
 
         //Fonction pour afficher le score
         function afficherLeScore() {
-            //Style su texte
+            //Style du texte
             ctx.font = "bold 82px Calibri";
             ctx.textAlign = "right"
             ctx.textBaseline = "top";
